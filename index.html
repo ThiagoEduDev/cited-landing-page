@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CITED — Run AI Visibility Audits</title>
+<meta name="description" content="Run a complete AI visibility audit on any site tonight. 50 checks with exact verification steps, plus three tools that generate the robots.txt, llms.txt and schema the site needs. $47, one time.">
+
+<!-- ============================================================
+     CONFIG — set these five values once, then this page is live.
+     Nothing else in this file needs editing.
+     ============================================================ -->
+<script>
+window.CITED_CONFIG = {
+  checkoutUrl : "",                    // e.g. "https://pay.cakto.com.br/xxxxx"
+  supportEmail: "",                    // e.g. "hello@yourdomain.com"
+  termsUrl    : "/terms",
+  privacyUrl  : "/privacy",
+  refundUrl   : "/refund"
+};
+</script>
+<style>
+  :root{
+    --ink:#101218; --soft:#5a6172; --line:#e3e6ee; --bg:#fff; --alt:#f6f7fa;
+    --accent:#1b4dd8; --accent-soft:#eef2ff; --dark:#101218;
+    --good:#0c8a5f; --bad:#c23440; --amber:#c78500;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:17px;line-height:1.62;-webkit-font-smoothing:antialiased}
+  .w{max-width:920px;margin:0 auto;padding:0 22px}
+  .narrow{max-width:720px}
+  section{padding:64px 0}
+  section.alt{background:var(--alt)}
+  section.dark{background:var(--dark);color:#fff}
+  h1{font-size:2.85rem;line-height:1.07;letter-spacing:-.035em;margin:0 0 18px}
+  h2{font-size:1.95rem;line-height:1.16;letter-spacing:-.025em;margin:0 0 14px}
+  h3{font-size:1.12rem;letter-spacing:-.01em;margin:0 0 6px}
+  p{margin:0 0 16px}
+  .eyebrow{font-size:.76rem;font-weight:750;letter-spacing:.17em;text-transform:uppercase;color:var(--accent);margin-bottom:14px}
+  .dark .eyebrow{color:#8fa8f5}
+  .lede{font-size:1.18rem;color:var(--soft);line-height:1.55}
+  .dark .lede{color:#a9b2c6}
+  .cta{display:inline-block;background:var(--accent);color:#fff;font-weight:700;font-size:1.05rem;padding:17px 38px;border-radius:10px;text-decoration:none;box-shadow:0 5px 18px rgba(27,77,216,.28);transition:transform .12s,box-shadow .12s}
+  .cta:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(27,77,216,.34)}
+  .ctasub{font-size:.88rem;color:var(--soft);margin-top:13px}
+  .dark .ctasub{color:#8b93a7}
+  code{font-family:var(--mono);font-size:.87em;background:#eef0f6;padding:.1em .38em;border-radius:4px}
+  .dark code{background:#242833;color:#dfe3ec}
+
+  .hero{padding:64px 0 50px;border-bottom:1px solid var(--line)}
+  .shot{width:100%;border-radius:12px;border:1px solid var(--line);box-shadow:0 12px 40px rgba(16,18,24,.13);display:block}
+  .shotcap{font-size:.84rem;color:var(--soft);margin-top:10px;text-align:center}
+
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin:28px 0 0}
+  .stat b{display:block;font-size:2rem;font-weight:750;letter-spacing:-.03em;line-height:1.1;color:var(--accent)}
+  .dark .stat b{color:#8fa8f5}
+  .stat span{font-size:.85rem;color:var(--soft);display:block;margin-top:3px}
+  .dark .stat span{color:#a9b2c6}
+
+  table{width:100%;border-collapse:collapse;margin:24px 0;font-size:.93rem}
+  th,td{padding:13px 12px;border-bottom:1px solid var(--line);text-align:left}
+  th{font-size:.7rem;font-weight:750;text-transform:uppercase;letter-spacing:.08em;color:var(--soft)}
+  td.y{color:var(--good);font-weight:700}
+  td.n{color:var(--bad);font-weight:700}
+  .col-us{background:var(--accent-soft)}
+  th.col-us{color:var(--accent)}
+
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:26px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:13px;padding:22px 24px}
+  .card p{font-size:.94rem;color:var(--soft);margin:0}
+
+  .flow{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:center;margin:22px 0}
+  .flow .box{background:#fff;border:1px solid var(--line);border-radius:11px;padding:16px 18px;font-size:.92rem}
+  .flow .box b{display:block;font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);margin-bottom:5px}
+  .flow .arrow{font-size:1.4rem;color:var(--soft)}
+  .flow pre{font-family:var(--mono);font-size:.74rem;background:#14161c;color:#e6e9f0;padding:12px;border-radius:8px;margin:0;overflow-x:auto}
+
+  .cite{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin-top:26px}
+  .L{border-radius:12px;padding:19px;color:#fff}
+  .L b{display:block;font-size:1.85rem;line-height:1;margin-bottom:7px;letter-spacing:-.03em}
+  .L strong{display:block;font-size:.97rem;margin-bottom:5px}
+  .L span{font-size:.85rem;opacity:.93;line-height:1.45;display:block}
+
+  .stack{border:1px solid var(--line);border-radius:13px;overflow:hidden;margin:24px 0;background:#fff}
+  .si{display:flex;justify-content:space-between;gap:16px;padding:14px 20px;border-bottom:1px solid var(--line);align-items:baseline}
+  .si:last-child{border-bottom:none}
+  .si b{font-weight:650;font-size:.97rem}
+  .si span{font-size:.87rem;color:var(--soft);display:block;font-weight:400;margin-top:1px}
+  .si i{font-style:normal;color:var(--soft);white-space:nowrap;font-size:.88rem}
+  .si.price{background:var(--accent-soft)}
+  .si.price b,.si.price i{color:var(--accent);font-size:1.12rem;font-weight:750}
+
+  details{border-bottom:1px solid var(--line)}
+  summary{cursor:pointer;padding:16px 0;font-weight:650;font-size:1.01rem;list-style:none;display:flex;justify-content:space-between;gap:14px;align-items:flex-start}
+  summary::-webkit-details-marker{display:none}
+  summary:after{content:'+';color:var(--accent);font-weight:750;font-size:1.3rem;line-height:1}
+  details[open] summary:after{content:'–'}
+  details .b{padding:0 0 18px;color:var(--soft);font-size:.95rem}
+  details .b strong{color:var(--ink)}
+
+  .guarantee{border:2px solid var(--accent);border-radius:14px;padding:26px 30px;background:var(--accent-soft)}
+  .placeholder{border:2px dashed #c3cadb;border-radius:12px;padding:22px 24px;background:#fafbfd;color:var(--soft);font-size:.92rem}
+  .placeholder b{color:var(--bad);display:block;margin-bottom:6px;font-size:.78rem;text-transform:uppercase;letter-spacing:.08em}
+  footer{background:var(--dark);color:#8b93a7;padding:46px 0;font-size:.85rem}
+  footer a{color:#a9b2c6}
+  .fineprint{font-size:.83rem;color:var(--soft);line-height:1.6}
+  .dark .fineprint{color:#8b93a7}
+  ul.tick{list-style:none;padding:0;margin:16px 0}
+  ul.tick li{padding-left:28px;position:relative;margin:9px 0;font-size:.96rem}
+  ul.tick li:before{content:'✓';position:absolute;left:0;color:var(--good);font-weight:750}
+  ul.cross li:before{content:'✕';color:var(--bad)}
+
+  @media (max-width:760px){
+    h1{font-size:2.05rem} h2{font-size:1.55rem} body{font-size:16px}
+    section{padding:46px 0}
+    .stats{grid-template-columns:1fr 1fr;gap:20px}
+    .grid,.cite{grid-template-columns:1fr}
+    .flow{grid-template-columns:1fr} .flow .arrow{transform:rotate(90deg);text-align:center}
+    .cta{display:block;text-align:center;padding:16px 20px}
+    table{font-size:.84rem} th,td{padding:10px 7px}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ HERO ============ -->
+<section class="hero">
+  <div class="w">
+    <div class="eyebrow">For SEO freelancers, web consultants &amp; small agencies</div>
+    <h1>Run a complete AI visibility audit on any site — tonight.</h1>
+    <p class="lede">50 checks, each with the exact steps to verify it, plus three tools that <strong>generate</strong> the <code>robots.txt</code>, <code>llms.txt</code> and schema the site actually needs. Built for the moment a client asks <em>"why aren't we showing up in ChatGPT?"</em> and you need a real answer — and something to sell them.</p>
+
+    <div style="margin:32px 0">
+      <a href="#buy" class="cta">Get CITED — $47 one time</a>
+      <div class="ctasub">Instant download · Runs offline in your browser · Use it on every client site you touch · 30-day guarantee</div>
+    </div>
+
+    <img class="shot" src="assets/02-scorecard.png" alt="The AI Visibility Scorecard showing a score of 34 out of 100, four layer bars, and an expanded check explaining how to verify whether Google-Extended is allowed.">
+    <p class="shotcap">The Scorecard. Every check tells you how to verify it — so it works on a client site you have never seen before.</p>
+  </div>
+</section>
+
+<!-- ============ PROBLEM ============ -->
+<section>
+  <div class="w narrow">
+    <div class="eyebrow">The conversation you are already having</div>
+    <h2>"We're not showing up in ChatGPT. Can you look into it?"</h2>
+    <p>You know SEO. You do not yet have a repeatable process for this — a defined set of checks, in a defined order, that produces a document you can charge for.</p>
+    <p>So the honest options today are: spend a weekend assembling one from free checklists that all list the same forty things in no particular order, pay $95–$495 a month for a tool that tells you the client is invisible without telling you what to change, or say you'll look into it and hope they forget.</p>
+    <p><strong>This is that process, built.</strong></p>
+
+    <div class="stats">
+      <div class="stat"><b>68%</b><span>of US Google searches now end without a click</span></div>
+      <div class="stat"><b>48%</b><span>of results pages carry an AI Overview</span></div>
+      <div class="stat"><b>−61%</b><span>organic click-through when one appears</span></div>
+      <div class="stat"><b>+20–30%</b><span>typical MRR uplift from adding GEO to an SEO retainer</span></div>
+    </div>
+    <p class="fineprint" style="margin-top:20px">Sources: SparkToro, Omnibound, outreachbloom — all 2026, all linked in the kit's <code>SOURCES.md</code>. Every statistic on this page is sourced, because a product about being citable should probably cite things.</p>
+  </div>
+</section>
+
+<!-- ============ THE MATH ============ -->
+<section class="alt">
+  <div class="w narrow">
+    <div class="eyebrow">Why this pays for itself immediately</div>
+    <h2>Published rate for one AI visibility audit: $800–$7,500.</h2>
+    <p>That is the market rate for the deliverable this kit produces — not a projection, a published 2026 figure. Retainers run $2,000–$20,000/month, and experienced freelancers bill $125–$250/hour for it.</p>
+    <p>CITED is <strong>$47, once</strong>. At $47, the kit costs roughly twenty minutes of your billable time and you can use it on every client site you touch, forever.</p>
+    <p class="fineprint">Sources: fuelonline, stackmatix, outreachbloom, humanswith.ai — 2026 pricing surveys, linked in the kit. <strong>These are rates commanded by people with demonstrated results and existing client relationships.</strong> They are not a promise of what you will earn, and your first audits should be priced to get done, not to maximise revenue. The included First Client Pack is explicit about that.</p>
+  </div>
+</section>
+
+<!-- ============ DEMONSTRATION ============ -->
+<section>
+  <div class="w">
+    <div class="eyebrow">See it work</div>
+    <h2>Input → output. No results screenshots, because we don't have customers yet.</h2>
+    <p class="lede" style="max-width:64ch">What follows are real screenshots of the actual tools doing the actual thing. You can judge the product on the product.</p>
+
+    <h3 style="margin-top:38px">1 · Ten minutes to your first finding</h3>
+    <p style="font-size:.95rem;color:var(--soft)">Six guided checks with exact instructions — open this file, follow it, and you have a diagnosis. Most sites fail at least one.</p>
+    <img class="shot" src="assets/05-quickcheck-verdict.png" alt="The 10-Minute Invisibility Check results screen showing a score of 4 out of 6, a verdict of Effectively invisible, and specific explanations for each failed check.">
+
+    <h3 style="margin-top:38px">2 · It writes the schema</h3>
+    <p style="font-size:.95rem;color:var(--soft)">Seven JSON-LD types. Fill the form on the left, copy validating markup from the right, paste into <code>&lt;head&gt;</code>.</p>
+    <img class="shot" src="assets/03-schema-generator.png" alt="The Schema Generator with a LocalBusiness form filled in on the left and the generated, valid JSON-LD markup displayed on the right.">
+
+    <h3 style="margin-top:38px">3 · It writes the crawler rules</h3>
+    <p style="font-size:.95rem;color:var(--soft)">Fifteen AI crawler names handled for you, with three policy presets — and a warning if you are about to block the one that feeds Google's AI Overviews.</p>
+    <img class="shot" src="assets/04-robots-builder.png" alt="The llms.txt and robots.txt Builder showing three crawler policy presets on the left and the generated robots.txt file on the right.">
+
+    <h3 style="margin-top:38px">4 · It writes the llms.txt</h3>
+    <p style="font-size:.95rem;color:var(--soft)">The curated site map AI systems read — with a warning if your host is about to serve it as HTML, which silently makes it useless.</p>
+    <img class="shot" src="assets/07-llmstxt-builder.png" alt="The llms.txt Builder with a site form on the left and the generated llms.txt Markdown file on the right.">
+
+    <h3 style="margin-top:38px">5 · It tells you what assistants actually say</h3>
+    <p style="font-size:.95rem;color:var(--soft)">60 prompts that fill in the brand, category and location automatically. Run them, log them, and you have a dated baseline to show a client.</p>
+    <img class="shot" src="assets/06-prompt-library.png" alt="The AI Visibility Prompt Library with brand, category and location fields filled in, and discovery prompts auto-populated with those values.">
+
+    <div class="flow" style="margin-top:38px">
+      <div class="box"><b>Input</b>Business name, address, phone, profile URLs. About ninety seconds of typing.</div>
+      <div class="arrow">→</div>
+      <div class="box"><b>Output</b><pre>"@type": "Dentist",
+"name": "Northfield Dental",
+"sameAs": [
+  "linkedin.com/company/…",
+  "trustpilot.com/review/…"
+]</pre></div>
+    </div>
+    <p class="fineprint">That is the whole difference. A checklist tells you "add Organization schema". This hands you the Organization schema.</p>
+
+    <div style="text-align:center;margin-top:36px"><a href="#buy" class="cta">Get CITED — $47</a></div>
+  </div>
+</section>
+
+<!-- ============ MECHANISM ============ -->
+<section class="alt">
+  <div class="w">
+    <div class="eyebrow">The framework</div>
+    <h2>Four layers, worked in order.</h2>
+    <p class="lede" style="max-width:64ch">The ordering is the part that makes an audit defensible. Each layer depends on the one above it — which is why a 250-item flat checklist produces paralysis instead of a plan.</p>
+
+    <div class="cite">
+      <div class="L" style="background:#7c3aed"><b>C</b><strong>Crawlable</strong><span>Can they fetch and read it at all? Break this and nothing else matters.</span></div>
+      <div class="L" style="background:#0891b2"><b>I</b><strong>Identity</strong><span>Do they know exactly who this is? Ambiguity gets you left out.</span></div>
+      <div class="L" style="background:#d97706"><b>T</b><strong>Targeted Answers</strong><span>Can a passage be lifted into an answer? Most can't.</span></div>
+      <div class="L" style="background:#059669"><b>E</b><strong>Evidence</strong><span>Does anyone independent back it up? This decides close calls.</span></div>
+    </div>
+
+    <p style="margin-top:28px">The Scorecard sorts every failing item into this sequence automatically. That ordered list <em>is</em> your client deliverable — and it is the reason a client pays for an audit rather than downloading a free checklist themselves.</p>
+  </div>
+</section>
+
+<!-- ============ COMPARISON ============ -->
+<section>
+  <div class="w">
+    <div class="eyebrow">Honest comparison</div>
+    <h2>What each option actually does</h2>
+    <p class="lede" style="max-width:62ch">Only objectively checkable distinctions below. The tools are genuinely good at what they do — they just do a different job.</p>
+
+    <table>
+      <tr>
+        <th>&nbsp;</th>
+        <th>Free checklists</th>
+        <th class="col-us">CITED</th>
+        <th>Tracking tools</th>
+        <th>Agency audit</th>
+      </tr>
+      <tr><td>Lists what to check</td><td class="y">Yes</td><td class="y col-us">Yes</td><td class="n">No</td><td class="y">Yes</td></tr>
+      <tr><td>Tells you <em>how</em> to verify each item</td><td class="n">Rarely</td><td class="y col-us">Yes, all 50</td><td class="n">n/a</td><td class="y">Yes</td></tr>
+      <tr><td>Orders fixes by dependency</td><td class="n">No</td><td class="y col-us">Yes</td><td class="n">No</td><td class="y">Yes</td></tr>
+      <tr><td><strong>Generates the files and markup</strong></td><td class="n">No</td><td class="y col-us">Yes</td><td class="n">No</td><td class="y">Yes</td></tr>
+      <tr><td>Monitors citations automatically</td><td class="n">No</td><td class="n col-us">No — manual prompts</td><td class="y">Yes</td><td class="y">Yes</td></tr>
+      <tr><td>Client-ready report output</td><td class="n">No</td><td class="y col-us">Yes</td><td class="y">Yes</td><td class="y">Yes</td></tr>
+      <tr><td>Reusable across unlimited sites</td><td class="y">Yes</td><td class="y col-us">Yes</td><td class="n">Per-seat/domain</td><td class="n">Per engagement</td></tr>
+      <tr><td><strong>Cost</strong></td><td>$0</td><td class="col-us"><strong>$47 once</strong></td><td>$29–$495/mo</td><td>$800–$7,500</td></tr>
+    </table>
+    <p class="fineprint"><strong>Read that fifth row.</strong> CITED does not monitor anything automatically — it gives you 60 prompts to run by hand. If you need continuous automated tracking across many domains, buy a tracking tool; they are better at it. CITED is for diagnosing and fixing. Competitor pricing is publicly listed as at September 2026 and sourced in the kit.</p>
+  </div>
+</section>
+
+<!-- ============ WHO ============ -->
+<section class="alt">
+  <div class="w">
+    <h2>Who this is for — and who it isn't</h2>
+    <div class="grid" style="margin-top:20px">
+      <div class="card">
+        <h3 style="color:var(--good)">Buy it if…</h3>
+        <ul class="tick" style="margin-bottom:0">
+          <li>You do SEO, web or marketing work for clients</li>
+          <li>Someone has already asked you about AI search and you improvised the answer</li>
+          <li>You want a fixed-scope service you can quote on a call</li>
+          <li>You already have retainer clients you could add this to</li>
+          <li>You own a site yourself and are comfortable pasting code into <code>&lt;head&gt;</code></li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3 style="color:var(--bad)">Skip it if…</h3>
+        <ul class="tick cross" style="margin-bottom:0">
+          <li>You want it done for you — hire an agency instead</li>
+          <li>You want automated multi-domain monitoring — buy a tracking tool</li>
+          <li>You want a guaranteed ChatGPT ranking — nobody can sell you that</li>
+          <li>You run a pure e-commerce store: only 3.2% of shopping queries carry an AI Overview today, so your urgency is genuinely lower</li>
+          <li>You won't do the work. It is a weekend, then 30 minutes a week.</li>
+        </ul>
+      </div>
+    </div>
+    <p class="fineprint" style="margin-top:18px">The e-commerce line costs us sales. We would rather say it than take money for something you do not need yet.</p>
+  </div>
+</section>
+
+<!-- ============ OFFER ============ -->
+<section id="buy">
+  <div class="w narrow">
+    <div class="eyebrow">The offer</div>
+    <h2>Everything in the kit</h2>
+
+    <div class="stack">
+      <div class="si"><div><b>10-Minute Invisibility Check</b><span>Six guided checks. Your first finding, tonight.</span></div><i>Tool</i></div>
+      <div class="si"><div><b>AI Visibility Scorecard</b><span>50 weighted checks, each with verification steps. Notes per item. Generates a sequenced action plan.</span></div><i>Tool</i></div>
+      <div class="si"><div><b>Schema Generator</b><span>7 JSON-LD types. Validating, paste-ready output.</span></div><i>Tool</i></div>
+      <div class="si"><div><b>llms.txt + robots.txt Builder</b><span>Both files. 15 crawlers. Three policy presets, with guardrails.</span></div><i>Tool</i></div>
+      <div class="si"><div><b>AI Visibility Prompt Library</b><span>60 prompts that auto-fill brand, category and location.</span></div><i>Tool</i></div>
+      <div class="si"><div><b>The CITED Playbook</b><span>The reasoning behind every fix, in eight parts. Prints to PDF.</span></div><i>Guide</i></div>
+      <div class="si"><div><b>Answer Block Templates</b><span>18 content shapes that answer engines lift.</span></div><i>Templates</i></div>
+      <div class="si"><div><b>Outreach &amp; Review Templates</b><span>10 scripts for the evidence layer.</span></div><i>Templates</i></div>
+      <div class="si"><div><b>90-Day Implementation Plan</b><span>Sequenced into weekly 2–4 hour blocks.</span></div><i>Plan</i></div>
+      <div class="si"><div><b>Citation Tracker</b><span>Log what each assistant says over time. Sheets/Excel.</span></div><i>CSV</i></div>
+      <div class="si price"><b>One payment, yours permanently</b><i>$47</i></div>
+    </div>
+
+    <p>No subscription. No account. No login. No API keys. Every tool runs offline in your browser and will still work in ten years, because it is just HTML.</p>
+
+    <div style="text-align:center;margin:34px 0">
+      <a href="#buy" data-cta="checkout" class="cta">Get instant access — $47</a>
+      <div class="ctasub">Instant download · 30-day guarantee</div>
+    </div>
+
+    <div class="grid" style="margin-top:8px">
+      <div class="card">
+        <h3>Add at checkout: The First Client Pack <span style="color:var(--accent)">+$17</span></h3>
+        <p>How to land the first paid audit: the two prospect sweeps that find visibly broken sites in thirty minutes, the cold email that works, the fifteen-minute demo call script, eight objection responses, and what to charge for your first two. Twenty minutes to read.</p>
+      </div>
+      <div class="card">
+        <h3>Optional upgrade: The Agency Suite <span style="color:var(--accent)">$97</span></h3>
+        <p>For delivering at scale: white-label audit report you brand as your own, proposal and scope-of-work templates, a five-day delivery SOP, portfolio tracking, twelve repeatable SOPs, the competitor gap method and six more schema types.</p>
+      </div>
+    </div>
+
+    <div class="guarantee" style="margin-top:30px">
+      <h3 style="margin-bottom:8px">The 30-day "implemented or refunded" guarantee</h3>
+      <p style="margin-bottom:10px">Run the audit on a real site and work the first 30 days of the plan. If that site is not measurably more machine-readable than when you started — schema validating, <code>llms.txt</code> live, crawlers unblocked, answer blocks in place — email us and we will refund you in full.</p>
+      <p style="margin-bottom:0;font-size:.92rem;color:var(--soft)"><strong>Note what is being guaranteed.</strong> We guarantee the implementation, because that is what the product controls. We do not guarantee that ChatGPT will cite anyone, because nobody controls that — not us, not the $495/month tools, not the $7,500 agencies. Anyone promising you a guaranteed AI citation is selling something they cannot deliver.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ORIGINAL RESEARCH ============ -->
+<section class="alt">
+  <div class="w narrow">
+    <div class="eyebrow">Original research, included in the kit</div>
+    <h2>We checked 49 marketing and SEO companies. 83.7% had made no decision at all.</h2>
+    <p class="lede">Everyone repeats that businesses are accidentally blocking AI crawlers. We went and measured it rather than assuming — and the result was not what we expected.</p>
+
+    <div class="stats" style="margin:26px 0">
+      <div class="stat"><b>83.7%</b><span>have no AI crawler rules in robots.txt at all</span></div>
+      <div class="stat"><b>4.1%</b><span>block a crawler that actually drives citations</span></div>
+      <div class="stat"><b>87.8%</b><span>never mention Google-Extended</span></div>
+      <div class="stat"><b>1 of 49</b><span>had configured a deliberate "cited, not trained" policy</span></div>
+    </div>
+
+    <p><strong>The story isn't obstruction — it's inattention.</strong> Almost nobody in the industry that sells search visibility has taken a position on AI crawlers. Two exceptions stood out: <strong>Trustpilot blocks every crawler site-wide</strong>, and <strong>Majestic carries a blanket <code>Disallow: /</code></strong>. The Trustpilot one matters, because businesses rely on exactly that kind of third-party review page for the independent corroboration AI systems look for.</p>
+
+    <p>The full report, the method, the raw 49-row dataset and an honest limitations section ship inside the kit. <strong>Including the limitation that undercuts our own sales pitch:</strong> if you go checking client sites expecting to find blocked crawlers, you mostly won't. You'll find silence — which is a broader conversation, not a smaller one.</p>
+
+    <p class="fineprint"><strong>Method in brief:</strong> 62 domains attempted, 49 retrieved (79%), all on 21 September 2026. Convenience sample of marketing, SEO, hosting, website-platform, review and directory companies — not a random sample, and not small local businesses. Several major publishers refused our fetcher, which biases the sample toward permissive sites, so 4.1% should be read as a floor. Every row is independently verifiable by visiting the site's own robots.txt.</p>
+  </div>
+</section>
+
+<!-- ============ NO TESTIMONIALS, DELIBERATELY ============ -->
+<section>
+  <div class="w narrow">
+    <div class="eyebrow">About proof</div>
+    <h2>There are no testimonials on this page.</h2>
+    <p>CITED launched recently and has no customer results worth showing yet. Rather than invent some — which is illegal under FTC rules and equivalent law in the UK, EU, Canada and Australia, and which you would eventually spot — here is what we offer instead:</p>
+    <ul class="tick">
+      <li><strong>Real screenshots of the working tools</strong>, above. Not mockups. Judge the artefact.</li>
+      <li><strong>Original research with its raw dataset and limitations</strong>, including the finding that weakens our own pitch.</li>
+      <li><strong>Every statistic sourced and dated</strong>, in a file that ships with the product.</li>
+      <li><strong>An explicit list of what this does not do</strong> — no automated monitoring, no guaranteed citations, wrong fit for pure e-commerce.</li>
+      <li><strong>A 30-day refund</strong> on an outcome we actually control.</li>
+    </ul>
+    <p class="fineprint">When real results exist, they will appear here with the customer's name and permission, and you will be able to tell the difference.</p>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section>
+  <div class="w narrow">
+    <div class="eyebrow">Objections, answered</div>
+    <h2>The questions you are actually asking</h2>
+
+    <details><summary>Can't I find all this for free?</summary><div class="b">Most of the individual facts, yes. What you cannot easily assemble for free is the <strong>sequence</strong> — which of ~50 items to fix first, given that they depend on each other — and the <strong>generators</strong> that produce the actual <code>robots.txt</code>, <code>llms.txt</code> and JSON-LD. Free checklists stop at "add Organization schema". This hands you the schema. If you would rather assemble it yourself, that is genuinely a reasonable choice; it is a weekend of work.</div></details>
+
+    <details><summary>Why not just use ChatGPT to build this?</summary><div class="b">You could get a decent checklist that way — we would expect you to. What you would not get reliably is correct, current crawler user-agent strings, JSON-LD that validates first time, the dependency ordering, or a client-ready report. You would also have no way to know which parts it got wrong. Every statistic here is sourced and dated so you can check it.</div></details>
+
+    <details><summary>I already pay for Ahrefs / Semrush / an AI visibility tool. Do I need this?</summary><div class="b">Different job. Those tools <strong>measure</strong> — they tell you whether a site is being cited and how that trends. CITED <strong>diagnoses and fixes</strong> — it tells you why it is not being cited and generates the corrections. They complement each other. If you already pay for tracking, you have the "before" number and no process for moving it; this is that process.</div></details>
+
+    <details><summary>Will this guarantee my client shows up in ChatGPT?</summary><div class="b"><strong>No, and be suspicious of anyone who says otherwise.</strong> These are third-party systems that are probabilistic, do not publish their selection logic, produce different answers for different users, and change without notice. What you can control is eligibility: crawler access, unambiguous identity, extractable content, third-party corroboration. Sites with those properties are cited far more often. That is a good bet, not a certainty — and saying so on a sales call tends to win business, because the client has usually just been pitched by someone promising the moon.</div></details>
+
+    <details><summary>Is this just SEO with a new name?</summary><div class="b">There is overlap, but the target is different. SEO optimises for ranking position; this optimises for being cited inside an answer. Different signals: entity resolution, passage extractability, third-party corroboration. <strong>[FACT]</strong> Roughly 71% of pages ChatGPT cites contain structured data — that is a parsing property, not a ranking factor. And <code>Google-Extended</code> is a separate crawler from <code>Googlebot</code>, which is why sites rank fine and are still absent from AI Overviews.</div></details>
+
+    <details><summary>Do I need to be technical?</summary><div class="b">If you already do SEO or web work, comfortably yes. The generators produce code you paste into <code>&lt;head&gt;</code>. <strong>One item may need a developer:</strong> fixing JavaScript-only rendering. Everything else is form-filling, file uploads and writing.</div></details>
+
+    <details><summary>Is this only useful for agencies?</summary><div class="b">No — it works just as well on your own site, and plenty of buyers will use it that way. It is <em>built</em> for client work, which is why every check includes a verification procedure and a notes field that flows into the generated report. If you only have one site, you will still use all of it; you just will not need the bonuses.</div></details>
+
+    <details><summary>Will it work for my client's platform?</summary><div class="b">WordPress, Shopify, Webflow, Squarespace, Wix, HubSpot, custom — all of them. Everything is built on open standards (<code>robots.txt</code>, JSON-LD, HTML semantics) that behave identically everywhere. You need a way to add code to <code>&lt;head&gt;</code> and upload a file to the site root. Every major platform supports both.</div></details>
+
+    <details><summary>How long before the client sees results?</summary><div class="b">Week one: the score jumps and nothing changes externally — <strong>this is where most people quit.</strong> Weeks 2–6: assistants describe the business accurately when asked by name. Weeks 6–12: first unprompted mentions, usually on long-tail specific queries. Months 3–6: broader competitive queries.<br><br>Manage this expectation explicitly at the start of every engagement. "Best [category] in [city]" is a twelve-month project; "[category] in [city] that does [specific thing]" is a six-week one — and it converts better anyway.</div></details>
+
+    <details><summary>Can I charge clients for work I do with this?</summary><div class="b">Yes. The licence explicitly permits use on sites you own <em>or manage for clients</em>. You cannot resell or redistribute the kit itself. The Agency Suite adds a white-label report you can brand as your own.</div></details>
+
+    <details><summary>Is this another AI gimmick?</summary><div class="b">Reasonable suspicion. Judge it on the screenshots above — that is the real product, generating real files. There is no AI in it at all: no API calls, no model, no subscription. It is a structured audit procedure plus three deterministic code generators that run offline in your browser. The "AI" is what you are optimising <em>for</em>, not what is in the box.</div></details>
+
+    <details><summary>Why should I trust a product with no reviews?</summary><div class="b">You should not trust it on reputation, because it has not earned one yet. That is precisely why this page shows real screenshots of the working tools instead of testimonials, publishes its sources, states plainly what the product cannot do, and refuses to fabricate proof. Judge the artefact. And there is a 30-day refund if the artefact does not hold up.</div></details>
+
+    <details><summary>How many client sites can I use it on?</summary><div class="b">Unlimited. It is a licence for you, not per-domain. The Scorecard stores one site at a time in your browser — export each report to PDF before starting the next, or use a separate browser profile per client. The Agency Suite covers portfolio tracking across many clients.</div></details>
+
+    <details><summary>What happens when the standards change?</summary><div class="b">They will — crawler names change, schema recommendations evolve, and <code>llms.txt</code> is still a proposed convention with uneven support. That is why it is dated "2026 Edition" rather than pretending to be permanent, why every statistic carries its source and date, and why the Agency Suite includes quarterly re-audit SOPs specifically for catching drift. This is a field that requires maintenance, and the product says so.</div></details>
+
+    <details><summary>Is this a subscription?</summary><div class="b">No. One payment, permanent access, instant download. No account, no login, no recurring charge. The tools work offline and keep working whether or not this business exists next year — which, given it is a folder of HTML files, is a real advantage over anything cloud-hosted.</div></details>
+  </div>
+</section>
+
+<!-- ============ CLOSE ============ -->
+<section class="dark">
+  <div class="w narrow" style="text-align:center">
+    <div class="eyebrow">Try it before you buy it</div>
+    <h2 style="font-size:2rem">Open a logged-out chat. Ask it who the best [category] in your client's city is.</h2>
+    <p class="lede" style="margin:0 auto 14px;max-width:54ch">Then open their <code>robots.txt</code> and search for <code>Google-Extended</code>.</p>
+    <p class="lede" style="margin:0 auto 32px;max-width:54ch">That is two of the six checks, free, in about ninety seconds. If both come back clean, you do not need this. If they don't, you have a client conversation — and the kit is $47.</p>
+    <a href="#buy" data-cta="checkout" class="cta">Get CITED — $47 one time</a>
+    <div class="ctasub">Instant download · 10 components · 30-day implemented-or-refunded guarantee</div>
+  </div>
+</section>
+
+<footer>
+  <div class="w">
+    <p style="margin-bottom:14px"><strong style="color:#fff">CITED — The AI Search Visibility Kit</strong> · 2026 Edition</p>
+    <p class="fineprint" style="margin-bottom:12px">Not affiliated with, endorsed by or connected to OpenAI, Google, Anthropic, Perplexity AI, Microsoft or Apple. All trademarks are the property of their respective owners and are referenced descriptively for identification only.</p>
+    <p class="fineprint" style="margin-bottom:12px">This product describes structural best practice for AI search visibility. It does not guarantee citation, ranking or traffic outcomes, which are controlled by third-party systems that change without notice. Market rates referenced are published 2026 industry figures, not a representation of earnings. All statistics are sourced and dated in the kit's SOURCES.md file.</p>
+    <p class="fineprint" style="margin:0"><a href="#" data-cfg="termsUrl">Terms</a> · <a href="#" data-cfg="privacyUrl">Privacy</a> · <a href="#" data-cfg="refundUrl">Refund policy</a> · <a href="#" data-cfg="supportEmail">Support</a></p>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var c = window.CITED_CONFIG || {};
+
+  // Checkout CTAs
+  var ctas = document.querySelectorAll('[data-cta="checkout"]');
+  if (c.checkoutUrl) {
+    ctas.forEach(function(a){ a.setAttribute('href', c.checkoutUrl); });
+  } else {
+    // Fail loudly for the operator, harmlessly for a visitor:
+    // the button still scrolls to the offer section rather than 404ing.
+    console.warn('[CITED] checkoutUrl is not set in CITED_CONFIG. Buy buttons scroll to #buy instead of opening checkout.');
+  }
+
+  // Footer links
+  document.querySelectorAll('[data-cfg]').forEach(function(a){
+    var key = a.getAttribute('data-cfg');
+    var val = c[key];
+    if (!val) { a.style.display = 'none'; return; }
+    a.setAttribute('href', key === 'supportEmail' ? 'mailto:' + val : val);
+  });
+})();
+</script>
+
+</body>
+</html>
