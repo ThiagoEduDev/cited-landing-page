@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <!-- Small-size / favicon variant. At 16-32px the standard icon's stroke
+       (22 units, ~5.5% of canvas) thins out and the bracket gap can fill
+       in with anti-aliasing. This variant thickens the stroke to 34 units
+       (~8.5% of canvas) and slightly enlarges/closes the brackets so the
+       shape stays legible as a distinct "[ ]" silhouette down to 16x16.
+       Export this file at 16, 32 and 180px — not the default icon file. -->
+  <rect width="400" height="400" rx="72" fill="#101218"/>
+  <!-- Left bracket, thicker stroke (34), tighter to center for small-size legibility -->
+  <path d="M160,80 L100,80 L100,320 L160,320 L160,286 L134,286 L134,114 L160,114 Z" fill="#5c8dff"/>
+  <!-- Right bracket, mirrored -->
+  <path d="M240,80 L300,80 L300,320 L240,320 L240,286 L266,286 L266,114 L240,114 Z" fill="#5c8dff"/>
+</svg>
